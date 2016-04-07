@@ -1,0 +1,71 @@
+---
+title: 'Regression Models: Course Project'
+author: "Amin"
+date: "Friday, October 23, 2015"
+output: pdf_document
+---
+
+#Summary
+The goal of this project is to investigate the relationship between a set of variables and  miles per gallon (mpg) given a dataset of a collection of cars (mtcars). We are particularly interested in finding any relation between MPG and the type of transmission (automatic or manual), and quantifying this relation. We use exploratory data analysis and regression model to explore this relationship.  
+
+
+#Global Setting
+Here is the global setting for the code used throughout the report.
+```{r, echo=TRUE}
+echo = TRUE
+library(plyr)
+```
+
+#Loading the data
+Firstly, we load the data.
+```{r}
+data(mtcars)
+head(mtcars, n = 2)
+```
+
+#Exploratory Data Analysis
+To do the analysis, we start with some basic exploratory data analysis. To explore the relation between mpg and transmisson, we plot the boxplot of these two variables. The plot shows that we expected value of mpg is higher for the manual transmission. To explore the relationship with other variables, we use the pairs function to explore the correlation between all variables. As the plot shows (see Appendix), there is high correlation between mpg and some other variables, especially with "wt".
+
+#Regression Analysis
+In this section, we use the regression model to build our model of the data. In our initial model, we use all the variables as the predictor of "mpg". 
+```{r}
+fit0 <- lm(mpg ~ ., data = mtcars)
+summary(fit0)
+```  
+
+This model has the residual standard error of 2.65 on 21 degrees of freedom and adjusted R-square of 0.81 which means that 81% of the variability is explained by the model. To improve the model, we use the step function to perform the selection of the best variables.
+```{r, results="hide"}
+optimalfit <- step(fit0, direction= "both")
+```
+```{r}
+summary(optimalfit)
+```
+This model suggests "am"" as independent variable and "wt" and "qsec" as confounders. The residual standard error is 2.459 on 28 degrees of freedom and the adjusted R-squared is 0.83 meaning that it explains 83% of variability. We can clearly see the improvement in this model comparing to the initial model.
+
+#Residual Analysis
+In this part of the report, we use the residual plots to do regression diagnostics for our model. Please refer to the appendix for the plot. The scatter plot of the residuals vs fitted values shows a completely random pattern. It means that the error in the model is independent from the predictors, and this is the best linear model to predict the mpg. The Normal Q-Q plot shows that the points are on the or close the line meaning that the residual are approximately normally distributed. The Scale-Location plot has a constant width in the points, so we do not suffer from heteroscedasticity. There are some potential points of interest in the plots that may indicate values of increased leverage of outliers.
+
+The data points with the most leverage in the model can be found by using the function hatvalues().
+```{r}
+highlev <- hatvalues(optimalfit)
+tail(sort(highlev),3)
+```
+
+This means that our analysis was correct. These are the same cars as indicated in the residual plots.
+
+#Appendix
+This appendix contains all the plots for the report.  
+
+```{r}
+boxplot(mtcars$mpg ~ mtcars$am, xlab="Transmission, 0: Automatic, 1: Manual", col = (c("red","yellow")), ylab="mpg",
+        main="Miles per Gallon with respect to Transmission Type")
+```  
+
+```{r}
+pairs(mtcars, panel=panel.smooth, main="The correlation between all variables of mtcars dataset")
+```  
+
+```{r}
+par(mfrow=c(2, 2))
+plot(optimalfit)
+```

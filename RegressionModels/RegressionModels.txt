@@ -1,0 +1,46 @@
+-----------------------------------
+Regression Models	
+Author: Amin Mousavi      Sep 2015
+-----------------------------------
+
+coef(lm(y ~x))
+
+ggplot2  =>  +geom_smooth(method="lm", formula=y~x)
+OR
+plot(y,x,xlab=...,ylab=...,col=...,pch=21)
+abline(fit,lwd=2)
+
+beta_1 = cor(Y,X)sd(Y)/sd(X)
+beta_0 = Y^- - beta_1 X^-
+
+fit <- lm(y ~ I(x-mean(x)), data=DF)		Arithmetic in lm by I()
+coef(fit)
+summary(fit)
+predict(fit, newdata=data.frame(x=newx))
+e <- resid(fit)
+predict(fit, newdata=data.frame(x=newx), interval=("confidence"))	or  interval=("prediction")
+
+library(GGally)
+ggpairs(DF, ...)
+
+lm(Var1 ~ Var2 * Var3)		Adds the interactions
+
+library(rgl)
+plot3d(x1, x2, y)
+
+pairs()
+
+Outliers
+fit <- lm(...)
+dfbetas(fit)
+
+fit1 <- lm(V1 ~ V2, data=DF)
+fit2 <- update(fit, V1~V2+V2+V3)
+anova(fit1,fit2)
+
+
+variance inflation factor
+library(car)
+vif(fit)
+hatvalues(fit)
+

@@ -1,0 +1,50 @@
+-----------------------------------
+Reproducible Research		
+Author: Amin Mousavi      Oct 2015
+-----------------------------------
+
+Markdown:  is a text-to-HTML conversion tool
+
+Italics:
+*This is italics*
+
+Bold:
+**Bold text**
+
+Headings:
+# First
+## Second
+### Third
+
+Lists:
+- item1
+- item2
+
+1. item1
+2. item2
+
+Links:
+[This address](http://www...)
+
+Advanced Links:
+Please refer to [this][1] and [this one][2]!
+[1]: http.../  "this"
+[2]: http.../  "this one"
+
+new line:  two spaces
+
+we can put HTML code in it
+
+---------------------
+R Markdown
+---------------------
+knitr package
+slides  =>  slidify
+
+RPubs		publish the HTML
+
+GitHub, BitBucket, SourceForge
+
+sessionInfo()
+
+

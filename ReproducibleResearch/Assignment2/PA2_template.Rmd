@@ -1,0 +1,94 @@
+---
+title: 'Reproducible Research: Assignment 2'
+author: "Amin"
+date: "Wednesday, October 21, 2015"
+output: html_document
+---
+
+#Synopsis
+This is the report for the peer assignemt 2 of the course of Reproducible Research on Coursera. The aim of this assignment is to explore the U.S. National Oceanic and Atmospheric Administration's (NOAA) storm database to answer some questions related to health and economic consequences.  
+
+#Global Setting
+Here is the global setting for the code used throughout the report.
+```{r, echo=TRUE}
+echo = TRUE
+library(plyr)
+```
+
+#Data Processing
+##Loading the Data
+The data is in the form of a comma-separated-value file compressed via the bzip2 algorithm . The data is available in [this link](https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2). A documentation for this dataset can be found at [this link](https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf).  
+
+```{r, echo= TRUE}
+setwd("C:/Amin/Coursera/RepData_PeerAssessment2/")
+if (!"stormData" %in% ls()) {
+  stormData <- read.csv(bzfile("repdata-data-StormData.csv.bz2"))
+  }
+head(stormData, n=2)
+
+```    
+##Most harmful events on poulation health
+The goal of this section is to answer this question: across United States, which type of events are most harmful with respect to population health. There are two columns in the datasets called "FATALITIES" and "INJURIES" that are related to the population health. We calculate the sum of these two variables for every value of the event type.  
+```{r, echo= TRUE}
+healthData = aggregate(cbind(FATALITIES,INJURIES) ~EVTYPE, data=stormData, FUN=sum)
+head(healthData, n=2)
+```  
+We add a new column to the data frame as "ALLDAMAGE" which is the sum of "FATALITIES" and "INJURIES".  
+```{r, echo= TRUE}
+healthData <- mutate(healthData, ALLDAMAGE=FATALITIES+INJURIES)
+head(healthData, n=2)
+```  
+Now, to figure out what event type had most harm we order the data frame by diffierent columns.  
+```{r, echo= TRUE}
+mostFatal <- healthData[with(healthData, order(-FATALITIES)),]
+head(mostFatal)
+mostInjury <- healthData[with(healthData, order(-INJURIES)),]
+head(mostInjury)
+mostAll <- healthData[with(healthData, order(-ALLDAMAGE)),]
+head(mostAll)
+```  
+
+
+##The EVentes with the Greatest Economic Consequences
+The goal of this section is to answer this question: across the United States, which types of events have the greatest economic consequences? There are four columns in the datasets related to the economic consequences: "PROPDMG", "PROPDMGEX", "CROPDMG" and "CROPDMGEXP". We use the values "PROPDMGEX" and "CROPDMG" as described in the codebook to calculate the real values of proerty and crop damage. These new values are saved as two new columns called "PropertyDamage" and "CropDamage". 
+```{r, echo= TRUE}
+stormData <- mutate(stormData, PropertyDamage = (PROPDMGEXP=="H")*PROPDMG*100+(PROPDMGEXP=="K")*PROPDMG*1000+(PROPDMGEXP=="M")*PROPDMG*1000000+(PROPDMGEXP=="B")*PROPDMG*1000000000)
+stormData <- mutate(stormData, CropDamage = (CROPDMGEXP=="H")*CROPDMG*100+(CROPDMGEXP=="K")*CROPDMG*1000+(CROPDMGEXP=="M")*CROPDMG*1000000+(CROPDMGEXP=="B")*CROPDMG*1000000000)
+head(stormData, n=2)
+```    
+Now, we calculate the sum of damages for every event type.
+```{r, echo= TRUE}
+damageData <- aggregate(cbind(PropertyDamage,CropDamage) ~EVTYPE, data=stormData, FUN=sum)
+damageData <- mutate(damageData, AllDamage=PropertyDamage+CropDamage)
+head(damageData, n=2)
+```  
+Now, to figure out what type of event has most economic consequences, we order the data by diffierent columns.  
+```{r, echo= TRUE}
+mostPropDmg <- damageData[with(damageData, order(-PropertyDamage)),]
+head(mostPropDmg)
+mostCropDmg <- damageData[with(damageData, order(-CropDamage)),]
+head(mostCropDmg)
+mostAllDmg <- damageData[with(damageData, order(-AllDamage)),]
+head(mostAllDmg)
+```  
+
+#Result
+Here is the result for the events with most harm on the population health.
+```{r, echo= TRUE}
+barplot(mostFatal$FATALITIES[1:10],names.arg = mostFatal$EVTYPE[1:10],las=2,main="Sum of Fatalities per Event Type")
+barplot(mostInjury$INJURIES[1:10],names.arg = mostFatal$EVTYPE[1:10],las=2,main="Sum of Injuries per Event Type")
+barplot(mostAll$ALLDAMAGE[1:10],names.arg = mostFatal$EVTYPE[1:10],las=2,main="Sum of all Human Health Damages per Event Type")
+```    
+
+According to the results, the "TORNADO" has the highest "FATALITIES", "INJURIES" and the sum of the two. So, "TORNADO" is the most harmful type of event for the population health.  
+
+Here is the result for the events with most economic consequences.
+```{r, echo= TRUE}
+barplot(mostPropDmg$PropertyDamage[1:10],names.arg = mostPropDmg$EVTYPE[1:10],las=2,main="Sum of Property Damage per Event Type")
+barplot(mostCropDmg$CropDamage[1:10],names.arg = mostCropDmg$EVTYPE[1:10],las=2,main="Sum of Crop Damage per Event Type")
+barplot(mostAllDmg$AllDamage[1:10],names.arg = mostAllDmg$EVTYPE[1:10],las=2,main="Sum of all Damages per Event Type")
+```   
+
+According to the results, the "FLOOD" has the highest damage on the properties, and "DROUGHT" has the highest damage on the crops. Overally, the "FLOOD" has the highest economic impact.  
+
+

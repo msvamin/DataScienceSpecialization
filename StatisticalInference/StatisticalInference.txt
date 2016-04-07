@@ -1,0 +1,77 @@
+-----------------------------------
+Statistical Inference		
+Author: Amin Mousavi      Sep 2015
+-----------------------------------
+
+OMF: probability mass function (discrete var)
+
+Bernoulli dist
+coin: X=0 or X=1  p(x) = p^x (1-p)^(1-x)
+E[X] = p
+Binomial dist: Sum of n iid Bernoulli
+P(X=x) = (n  x) p^x (1-p)^(n-x)
+
+
+PDF: probability density function (cont. var)
+CDF: cumulative distribution function F(x) = P(X<=x)
+Survival function  S(x) = 1-F(x) = P(x>=x)
+
+quantile: a quantile of F is x where: F(x) = a
+
+Diagnostic tests
+Positive predictive value = P(D|+)
+Negative predictive value = P(Dc|-)
+Sensitivity: P(+|D)
+Specificity: P(-|Dc)
+Likelihood ratios:  P(D|+)/P(Dc|+) = P(+|D)/P(+|Dc) X P(D)/P(Dc)  (Odds values)
+
+Independence: P(AB) = P(A)P(B)
+
+Var(X) = E[X^2]-E[X]^2
+
+Sample mean: Xs
+E[Xs] = E[X],  Var(Xs) = Var(X)/n
+Sample variance: S^2
+logical estimate of varaiance of sample mean: S^2 / n
+logical estimate of Standard Error: S/(n^(1/2))
+
+Simulation
+nosim <- 1000
+n <- 10
+sd(apply(matrix(rnorm(nosim*n), nosim),1,mean))
+
+Normal distribution
+2sd [-1,1] interval -> 68%
+4sd [-2,2] interval -> 95%
+
+Poisson dist
+P(X=x,L) = L^x e^(-L) / x!
+E[X]=L
+Var(X)=L
+Average per time X~Poisson(Lt),  L=E[X/t]
+when n is large and p is small Poisson is an accurate approx of Binomail:
+X~Binomial(n,p), L = np
+
+Asymptotic:  means <- cumsum(rnorm(n))/(1:n)
+
+Centeral limit Theorem:
+simplified CLT states that the distribution of average of iid vars becomes 
+that of a standard norma as the sample size increases
+
+Confidence intervals
+Xs +- 2Std/n^(1/2)  is called 95% interval for E[X]
+binom.test(success,trails)$conf.int
+
+------------------------------
+Confidence Intervals
+------------------------------
+Est +- ZQ X SEest	SEest= Standart Error of estim.	ZQ: Z quantile - normal quantile
+Est +- TQ X SEest	T interval (are wider than Z)
+T is better. More data T -> Z
+Xs +- t_n-1 S/n^(1/2)		n: degree of freedom
+qt()
+mn + c(-1,1)*qt(.975, n-1) *s/sqrt(n)
+t.test(g2,g1,paired=FALSE, var.equal=TRUE)$conf
+
+
+library(manipulate)		Interactive plotting

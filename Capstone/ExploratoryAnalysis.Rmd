@@ -1,0 +1,183 @@
+---
+title: 'Data Science Specialization Capstone: Exploratory Analysis'
+author: "Amin"
+date: "Monday, December 28, 2015"
+output: html_document
+---
+
+#Synopsis
+This is the summary of the basic steps that needs to be taken for the exploratory data analysis. The data is from a corpus called HC Corpora (www.corpora.heliohost.org). See the readme file at http://www.corpora.heliohost.org/aboutcorpus.html for details on the corpora available. 
+
+#Global Setting
+Here is the global setting for the code used throughout the report.
+```{r results='hide', message=FALSE, warning=FALSE, echo=TRUE}
+library(RWekajars)
+library(qdapDictionaries)
+library(qdapRegex)
+library(qdapTools)
+library(RColorBrewer)
+library(qdap)
+library(NLP)
+library(tm)
+library(SnowballC)
+library(slam)
+library(RWeka)
+library(rJava)
+library(wordcloud)
+library(stringr)
+library(DT)
+library(stringi)
+library(googleVis)
+```
+
+### Loading The Data 
+For this report, I only use the English language files. The following code loads the data.
+```{r, eval=FALSE, echo=TRUE}
+blogs <- readLines("./final/en_US/en_US.blogs.txt", encoding = "UTF-8", skipNul=TRUE)
+news <- readLines("./final/en_US/en_US.news.txt", encoding = "UTF-8", skipNul=TRUE)
+twitter <- readLines("./final/en_US/en_US.twitter.txt", encoding = "UTF-8", skipNul=TRUE)
+```
+#Sampling the Data
+To sample the data, I chose 1000 lines from each file, and saved them as new data file.
+```{r, eval=FALSE}
+sampleTwitter <- twitter[sample(1:length(twitter),10000)]
+sampleNews <- news[sample(1:length(news),10000)]
+sampleBlogs <- blogs[sample(1:length(blogs),10000)]
+textSample <- c(sampleTwitter,sampleNews,sampleBlogs)
+writeLines(textSample, "./textSample.txt")
+```
+
+```{r, eval=FALSE, echo=FALSE}
+theSampleCon <- file("./textSample.txt")
+theSample <- readLines(theSampleCon)
+close(theSampleCon)
+```
+
+#Summary of Data Files
+I used the following code to summarize the information about the data files.
+
+```{r, eval=FALSE, echo=TRUE}
+blogsFile <- file.info("./final/en_US/en_US.blogs.txt")$size / 1024.0 / 1024.0
+newsFile <- file.info("./final/en_US/en_US.news.txt")$size / 1024.0 / 1024.0
+twitterFile <- file.info("./final/en_US/en_US.twitter.txt")$size / 1024.0 / 1024.0
+sampleFile <- file.info("./MilestoneReport/textSample.txt")$size / 1024.0 / 1024.0
+
+blogsLength <- length(blogs)
+newsLength <- length(news)
+twitterLength <- length(twitter)
+sampleLength <- length(theSample)
+
+blogsWords <- sum(sapply(gregexpr("\\S+", blogs), length))
+newsWords <- sum(sapply(gregexpr("\\S+", news), length))
+twitterWords <- sum(sapply(gregexpr("\\S+", twitter), length))
+sampleWords <- sum(sapply(gregexpr("\\S+", theSample), length))
+```
+
+```{r, eval=TRUE, echo=TRUE}
+fileSummary <- data.frame(
+        fileName = c("Blogs","News","Twitter", "Aggregated Sample"),
+        fileSize = c(round(blogsFile, digits = 2), 
+                     round(newsFile,digits = 2), 
+                     round(twitterFile, digits = 2),
+                     round(sampleFile, digits = 2)),
+        lineCount = c(blogsLength, newsLength, twitterLength, sampleLength),
+        wordCount = c(blogsWords, newsWords, twitterWords, sampleLength)                  
+)
+```
+
+```{r, eval=TRUE, echo=FALSE}
+colnames(fileSummary) <- c("File Name", "File Size in Megabyte", "Line Count", "Word Count")
+
+saveRDS(fileSummary, file = "./fileSummary.Rda")
+```
+
+```{r, eval=TRUE, echo=FALSE}
+fileSummaryDF <- readRDS("./fileSummary.Rda")
+```
+
+Here is the summary of data statistics.
+
+```{r, echo=FALSE}
+knitr::kable(head(fileSummaryDF, 10))
+```
+
+```{r, eval=FALSE, echo=FALSE}
+finalCorpus <- readRDS("./finalCorpus.RDS")
+```
+
+
+# Cleaning the Data
+
+To clean the data, I removed the numbers, URLs and profanity words, and converted all the text into lower case.
+
+```{r, eval=FALSE, echo=TRUE}
+cleanSample <- tm_map(cleanSample, content_transformer(function(x) iconv(x, to="UTF-8", sub="byte")), 
+                      mc.cores=2)
+cleanSample <- tm_map(cleanSample, content_transformer(tolower), lazy = TRUE)
+cleanSample <- tm_map(cleanSample, content_transformer(removePunctuation))
+cleanSample <- tm_map(cleanSample, content_transformer(removeNumbers))
+removeURL <- function(x) gsub("http[[:alnum:]]*", "", x) 
+cleanSample <- tm_map(cleanSample, content_transformer(removeURL))
+cleanSample <- tm_map(cleanSample, stripWhitespace)
+cleanSample <- tm_map(cleanSample, removeWords, stopwords("english"))
+cleanSample <- tm_map(cleanSample, removeWords, profanityWords)
+cleanSample <- tm_map(cleanSample, stemDocument)
+cleanSample <- tm_map(cleanSample, stripWhitespace)
+saveRDS(cleanSample, file = "./MilestoneReport/finalCorpus.RDS")
+finalCorpus <- readRDS("./MilestoneReport/finalCorpus.RDS")
+finalCorpusDF <-data.frame(text=unlist(sapply(finalCorpus,`[`, "content")), 
+                           stringsAsFactors = FALSE)
+```
+
+
+## Exploratory Data Analysis
+To explore the data, in this section, we extract the unigrams, bigrams and trigrams from the text.
+
+```{r, eval=FALSE, echo=TRUE}
+ngramTokenizer <- function(theCorpus, ngramCount) {
+        ngramFunction <- NGramTokenizer(theCorpus, 
+                                Weka_control(min = ngramCount, max = ngramCount, 
+                                delimiters = " \\r\\n\\t.,;:\"()?!"))
+        ngramFunction <- data.frame(table(ngramFunction))
+        ngramFunction <- ngramFunction[order(ngramFunction$Freq, 
+                                             decreasing = TRUE),][1:10,]
+        colnames(ngramFunction) <- c("String","Count")
+        ngramFunction
+}
+```
+
+Here is the statistics for the extracted n-grams.
+
+###Unigrams
+```{r, results="asis"}
+unigram <- readRDS("./unigram.RDS")
+unigramPlot <- gvisColumnChart(unigram, "String", "Count",                  
+                            options=list(legend="none"))
+
+print(unigramPlot, "chart")
+```
+
+###Bigrams
+```{r, results="asis"}
+bigram <- readRDS("./bigram.RDS")
+bigramPlot <- gvisColumnChart(bigram, "String", "Count",                  
+                            options=list(legend="none"))
+
+print(bigramPlot, "chart")
+```
+
+###Trigrams
+```{r, results="asis"}
+trigram <- readRDS("./trigram.RDS")
+trigramPlot <- gvisColumnChart(trigram, "String", "Count",                  
+                            options=list(legend="none"))
+
+print(trigramPlot, "chart")
+```
+
+
+#Next Steps
+For the next step, I need to create a predictive application that uses a model to predict the next word given a statement.
+
+
+

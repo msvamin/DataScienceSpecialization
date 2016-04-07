@@ -1,0 +1,213 @@
+-----------------------------------
+Basic Commands in R		
+Author: Amin Mousavi      Sep 2015
+-----------------------------------
+
+variable types:	numeric, integer, character, logical, complex
+x <- numeric()
+x <- float()
+append(x, a)
+
+
+getwd()					working directory
+dir()					list files
+list.files(directory)
+ls()					list vars
+source("RfileName")			load file
+library(PackageName)
+Sys.Date()
+print(...)
+round(x, n)			round x by n numbers
+choose(n, m)			n!/m!(n-m)!
+cumsum(x)			cumulative sum
+seq(1,5,by=0.5)
+
+c()
+paste(str1, str2, ...)
+class()
+as.numeric
+str( ... )		... === var, func, dataframe
+summary()		statistical summary
+
+
+---------------------------------
+Lists
+---------------------------------
+x <- list(a=1, b=2, c=3)
+x$a
+x["a"]
+names(x)
+x <- list(a=1:5, b=rnorm(10))
+lapply(x, mean)
+lapply(x, runif, min=0, max=10)
+lapply(x, function(elt), elt[,1])
+sapply			result as a vector
+apply			margins and arrays
+tapply			on a subset of an array
+mapply			multivariate of lapply
+mapply(rep, 1:4, 4:1)   ===   list(rep(1,4), rep(2,3))
+
+
+------------------------------------
+Matirces
+------------------------------------
+m <- matrix(1:12, nrow=3, ncol=4)
+dim(m)
+dim(m) <- c(2,6)
+m[1,]		first row
+m[,1]		first col
+m[c(1,3),]
+m[,c(1,3)]
+m[-c(1,3),]
+colnames(m) <- c(...)
+rownames(m) <- c(...)
+dimnames(m) <- list(c(...), c(...))
+apply(x, 1, sum)		row sums
+apply(x, 1, mean)		row means
+apply(x, 2, sum)		col sums
+apply(x, 2, mean)		col means
+v <- vector("numeric", length=10)
+cbind(x,y)
+rbind(x,y)
+x[!is.na(x)]
+a[a>5]
+which(a>5)		returns the indices
+any(a>5)		at least one -> TRUE
+all(a>5)		all -> TRUE
+
+
+---------------------------------
+Factors
+---------------------------------
+f <- factor(c(...), levels=c(...))
+table(f)
+unclass(f)
+
+x <- c(rnorm(5), rnorm(5,1))
+f <- gl(2,5)
+> f
+ [1] 1 1 1 1 1 2 2 2 2 2
+Levels: 1 2
+tapply(x,f,mean)
+split(x,f)
+
+--------------------------------
+Missing values
+--------------------------------
+nan: not a number
+na: not assigned
+nan is na but the converse is not true
+is.na()
+is.nan()
+
+
+-------------------------------
+Data Frames
+-------------------------------
+df <- data.frame(f=1:4, bar=c(F,F,T,T))
+nrow(x)
+ncol(x)
+names(x)
+names(x) <- c("a", "b")
+df[c(3,1),]		rows 3, 1
+df[c("x","z")]		cols x, z as list
+df[,c("x","z")]		cols x, z as matrix
+df$x			col x
+df["x"]			col x as list
+df[,"x"]		col x as vector
+df[complete.cases(df),]
+head(df)
+tail(df)
+s <- split(airquality, airquality$Month)
+
+attach(df)		Var1 => df$Var1
+
+aggregate(Var1~Var2, data=df, mean)
+sapply(split(df$Var2,df$Var1),mean)
+
+-----------------------------
+Read tables
+-----------------------------
+read.table(...)
+read.csv(...)			Comma separated
+dput(y, file="y.R")
+newy <- dget("y.R")
+dump(x,y)
+readLines()
+file()
+url()
+
+
+----------------------------
+Conditions and Loops
+----------------------------
+if(...){  ...  
+} else{ ... }
+
+for(i in 1:10){ ... }
+x <- c("a","b","c")
+for(letter in x){ ... }
+seq_along(x)         => 1 2 3
+seq_len(10)
+while(...){ ... }
+&&
+repeat{ ... }		infinite loop
+next			skip an iteration (continue)
+return			can break a loop
+
+
+-------------------------------
+Functions
+-------------------------------
+add2 <- function(x, y){ ... }
+source("filename.R")
+add2 <- function(x, n=10)		default value for n is 10
+args(lm)
+
+make.power <- function(n){
+	pow <- function(x){
+		x^n
+	}
+}
+>cube <- make.power(3)
+>square <- make.power(2)
+>ls(environment(cube))
+>get("n", environment(cube))
+
+
+------------------------------
+Debugging
+------------------------------
+traceback()		shows where the last error occured
+
+debug()
+Browse> n     => next line
+
+recover
+
+
+---------------------------------
+Random Numbers
+---------------------------------
+d: density,	r: random numbers, 	p: Cum dist,	q: quantile func
+
+Normal
+dnorm, rnorm, pnorm, qnorm
+
+Poisson
+rpois, ....
+rpois(10,1)
+
+Binomial
+rbinom, ...
+
+set.seed(1)
+
+sample(1:10,4)
+sample(letters, 5)
+sample(1:10, replace=TRUE)
+
+
+
+
+

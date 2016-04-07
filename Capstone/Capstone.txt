@@ -1,0 +1,32 @@
+
+---------------------
+Regular Expressions
+---------------------
+
+Metacharacters:
+---------------
+^i think  	Lines starting with exp
+morning$	Lines ending with exp
+
+Character classes with []:
+---------------------------
+[Bb][Uu][Ss][Hh]	All versions of Bush: BUsH, bUsh, ...
+^[Ii] think
+[0-9]		any number
+[a-zA-Z]	any letter
+[^?.]$		(^ means not) not ending with ? or .
+9.11		. any character  => 9/11   or 9:11  or  9-11
+flood|fire	| means or => flood or fire in the line
+^[Gg]ood|[Bb]ad			starts with good but can have bad anywhere
+^([Gg]ood|[Bb]ad)		starts with good or bad 
+George( [Ww]\.)? Bush		? means optional
+(.*)		* means any number including none
+(.+)		+ means at least one number
+[Bb]ush( +[^ ]+ +){1,5} debate		{} minimum and maximum number of matches of exp
++([a-zA-Z]+) +\1 +	\1 repeating exp in paranthesis
+
+
+	
+
+
+

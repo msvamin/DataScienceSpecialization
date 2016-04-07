@@ -1,0 +1,81 @@
+---
+title: 'Data Science Specialization Capstone: Milestone Report'
+author: "Amin"
+date: "Monday, December 28, 2015"
+output: html_document
+---
+
+#Synopsis
+This is the milestone report for the data science specialization capstone on Coursera.  The goal of this assignment is to explore data.  The data is from a corpus called HC Corpora (www.corpora.heliohost.org). See the readme file at http://www.corpora.heliohost.org/aboutcorpus.html for details on the corpora available. 
+
+#Global Setting
+Here is the global setting for the code used throughout the report.
+```{r, echo=TRUE, warning=FALSE}
+echo = TRUE
+library(RWekajars)
+library(qdapDictionaries)
+library(qdapRegex)
+library(qdapTools)
+library(RColorBrewer)
+library(qdap)
+library(NLP)
+library(tm)
+library(SnowballC)
+library(slam)
+library(RWeka)
+library(rJava)
+library(wordcloud)
+library(stringr)
+library(DT)
+library(stringi)
+library(googleVis)
+```
+
+#Load the Data
+For this report, I only use the English language files. The following code loads the data.
+```{r, echo= TRUE}
+blogs <- readLines("Coursera-Swiftkey/final/en_US/en_US.blogs.txt")
+news <- readLines("Coursera-Swiftkey/final/en_US/en_US.news.txt")
+twitter <- readLines("Coursera-Swiftkey/final/en_US/en_US.twitter.txt")
+```
+
+#Summary of Data Files
+I used the following code to summarize the information about the data files.
+
+```{r, echo= TRUE}
+blogs_stats   <- stri_stats_general(blogs)
+news_stats    <- stri_stats_general(news)
+twitter_stats <- stri_stats_general(twitter)
+blogs_words   <- stri_count_words(blogs)
+news_words    <- stri_count_words(news)
+twitter_words <- stri_count_words(twitter)
+```
+The summary of the information about the text files is:
+```{r, echo= TRUE}
+blogs_stats
+summary( blogs_words   )
+news_stats
+summary( news_words    )
+twitter_stats
+summary( twitter_words )
+```
+
+#Sampling the Data
+To sample the data, I chose 1000 lines from each file, and saved them as new data file.
+```{r, echo= TRUE}
+blogs_sample   <- sample(blogs, 10000)
+news_sample    <- sample(news, 10000)
+twitter_sample <- sample(twitter, 10000)
+save(blogs_sample, news_sample, twitter_sample, file= "sample_data.RData")
+```
+
+#Exploratory Analysis
+To do the exploratory data analysis, I used the sample data set.
+```{r, echo= TRUE}
+sampleData <- readLines("sample_data.RData")
+bigram_token <- function(x) NGramTokenizer(x, Weka_control(min = 2, max = 2))
+trigram_token <- function(x) NGramTokenizer(x, Weka_control(min = 3, max = 3))
+length_is <- function(n) function(x) length(x)==n
+```
+
+

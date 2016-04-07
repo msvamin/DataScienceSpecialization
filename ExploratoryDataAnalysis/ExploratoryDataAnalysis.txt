@@ -1,0 +1,157 @@
+-----------------------------------
+Exploratory Data Analysis in R		
+Author: Amin Mousavi      Sep 2015
+-----------------------------------
+
+--------------------------
+Base Plotting
+--------------------------
+summary(df$f1)
+boxplot(df$f1, col="blue")
+abline(h=12)
+hist(df$f1, col="green", breaks=10)
+rug(df$f1)
+abline(v=median(df$f1), col="magenta", lwd=4)
+boxplot(f1~f2, data=df, col="red")
+with(df, plot(f1,f2))		scatter plot
+with(df, plot(f1,f2), col=f3)
+with(subset(df,f1="..."), plot(f2,f3,f4="..."))
+
+pch: plotting symbol
+lwd: line width
+lty: line type
+col: color
+xlab: xlabel
+ylab: ylabel
+
+par(): specify global graphics affects all plots
+bg: background color
+mar: margine size
+oma: outer margin size
+mfrow: num of plots per row
+mfcol: num of plots per col
+par("lty")		returns line type
+
+plot
+lines
+points
+text
+title
+mtext
+axis
+legend
+
+f <- lm(x~y)
+abline(f)
+
+pdf(file="...")
+plot(...)
+dev.off()
+
+dev.copy(png,file="...")		save a plot from screen to file
+dev.off()
+
+dev.cur()
+dev.set()
+
+
+-----------------------------------
+Lattice plotting
+-----------------------------------
+library(lattice)
+xyplot(y~x | f*g, data)
+
+airquality <- transform(airquality, Month=factor(Month))
+xyplot(Ozone~Wind | Month, data = airquality, layout = c(5,1))
+
+p <- xyplot(...)     nothing happens
+print(p)
+
+f <- factor(f, labels=c("Group1","Group2))
+xyplot(y~x|f, panel=function(x,y,...) {
+	panel.xyplot(x,y,...)
+	panel.abline(h=median(y),lty=2)
+})
+
+bwplot
+histogram
+stripplot
+dotplot
+splam
+levelplot, contourplot
+
+-------------------------------------
+ggplot2
+-------------------------------------
+qplot(x,y, data=df)
+qplot(x,y,data=df, color=z)
+qplot(x,y,data=df, shape=z)
+
+qplot(x,y,data=df, geom=c("poit","smooth"))
+smooth(method="lm
+qplot(x,data=df, fill=z)		histogram of x
+
+qplot(x,y,data=df, facets=.~z)		1X3 subplots on z
+qplot(x,y,data=df, facets=z~.)		3X1 subplots on z
+
+qplot(x,y,data=df,color=z,geom=c("point","smooth"),method="lm")
+
+g <- ggplot(df, aes(x,y))
+summary(g)
+p <- g + geom_point(color="red",size=4,alpha=1/2) +geom_smooth(method="lm") + facet_grid(.~z)
+p <- g + geom_point(color=aes(z),size=4,alpha=1/2) +geom_smooth(method="lm") + facet_grid(.~z)
+p <- g + ... + labs(title="...")+labs(x="..",y=expression("log "*PM[2.5])
+p <- ... + geom_smooth(size=4, linetype=3,method="lm", se=FALSE)
+p <- ... + theme_bw(base_family="Times")		background
+print(p)
+
+require(GGally)
+ggpairs(swiss, lower=list(continuous="smooth"),params=c(method="loess"))
+
+---------------------------------------------
+Hierarchical Clustering
+---------------------------------------------
+
+Euclidean distance = ((x1-x2)^2 + (y1 - y2)^2 + ...)^(1/2)
+Manhattan distance = |x1-x2| + |y2-y1| + ...
+
+DF <- data.frame(x=x,y=y)
+distxy <- dist(DF)		matrix of pairwise distances
+hClustering <- hclust(distxy)	Cluster Dendrogram
+plot(hClustering)
+dataMatrix <- as.matrix(DF)
+heatmap(dataMatrix)		Clustering on rows and cols
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

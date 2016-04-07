@@ -1,0 +1,118 @@
+---
+title: 'Reproducible Research: Assignment 1'
+author: "Amin"
+date: "Friday, October 09, 2015"
+output: html_document
+---
+
+This is the report for the peer assignemt 1 of the course of Reproducible Research on Coursera. The aim of this assignment is to use data from a personal activity monitoring device and do some basic exploratory data analysis and generate a short report.
+
+#Loading and preprocessing the data
+The data is in a zipped csv file called activity.zip, We load the data as a data frame called "actData". We also remove the rows with NA values from the  data frame and save it as another data frame called "actDataComp". 
+```{r, echo= TRUE}
+actData <- read.csv(unzip(zipfile="activity.zip"))
+actDataComp <- actData[complete.cases(actData),]
+head(actData)
+head(actDataComp)
+```
+
+#What is mean total number of steps taken per day?
+In this part, we ignore the missing values in the data frame and use the "actDataComp". Firstly, we calculate the total number of steps taken per day using the aggregate function.  
+```{r, echo= TRUE}
+totalSteps <- aggregate(steps~date, data=actDataComp, sum)
+head(totalSteps)
+```  
+  
+  The histogram of the total steps per day is as follows:  
+```{r, echo=TRUE}
+hist(totalSteps$steps,breaks=10)
+```  
+  
+  The bar plot of the total steps per day is given below:  
+```{r, echo=TRUE}
+barplot(totalSteps$step, main="Total steps per day", xlab="day")
+```    
+  
+  The difference between these plots is a kind of obvious. The bar plot gives the value of steps for every date, while the histogram counts the days which its number of steps falls in the specific interval.  
+  
+  The mean and median of the total steps per day is given below.
+```{r, echo=TRUE}
+totStepMean <- mean(totalSteps$steps)
+totStepMed <- median(totalSteps$steps)
+totStepMean
+totStepMed
+```  
+
+#What is the average daily activity pattern?
+In this part, the number of steps is averaged across all days to calculate the average activity pattern.
+```{r, echo=TRUE}
+pattSteps <- aggregate(steps~interval, data=actDataComp, mean)
+```   
+
+  The result is:
+```{r, echo=TRUE}
+plot(pattSteps$interval,pattSteps$steps)
+```  
+
+  The 5-minute interval with maximum number of steps is:
+```{r, echo=TRUE}
+MaxInterval <- pattSteps[which.max(pattSteps$steps),]
+MaxInterval
+```
+
+#Imputing missing values
+Firstly, we calculate the total number of rows with missing data in the original data frame.
+```{r, echo=TRUE}
+sum(!complete.cases(actData))
+```  
+
+  We replace the missing values with the average for the 5-minute interval.
+Firstly, we calculate the total number of rows with missing data in the original data frame. For this, we use the "pattSteps" data frame.
+```{r, echo=TRUE}
+actDataFill <- actData
+for(i in 1:nrow(actDataFill)) {
+  if(is.na(actDataFill$steps[i])) {
+    actDataFill$steps[i] <- as.integer(pattSteps[pattSteps$interval==actDataFill$interval[i],]$steps)
+  }
+}
+head(actDataFill)
+```  
+
+  The histogram of the total number of steps per day is as follows.
+```{r, echo=TRUE}
+totalStepsFill <- aggregate(steps~date, data=actDataFill, sum)
+hist(totalStepsFill$steps,breaks=10)
+```  
+
+  The mean and median of the total steps per day for thew filled data frame are:
+```{r, echo=TRUE}
+totStepMeanFill <- mean(totalStepsFill$steps)
+totStepMedFill <- median(totalStepsFill$steps)
+totStepMeanFill
+totStepMedFill
+```  
+
+  The values of the mean and median are different, but the differences are not that significant. It seems that the bias of the missing values are not that significant.
+  
+#Are there differences in activity patterns between weekdays and weekends?
+For this part, we add a new factor variable as a new column to the data frame with two levels- "weekday" and "weekend".
+```{r, echo=TRUE}
+Days <- factor(weekdays(as.Date(actDataFill$date)))
+levels(Days) <- list(weekday=c("Monday","Tuesday","Wednesday","Thursday","Friday"),weekend=c("Saturday","Sunday"))
+actDataFill$day <- Days
+head(actDataFill)
+```  
+
+  Now, we calculate the average number of steps taken per 5-minute interval, for the weekdays and weekends, separately.
+```{r, echo=TRUE}
+meanData <- aggregate(steps ~ interval + day, data=actDataFill, mean)
+head(meanData)
+```  
+
+  The plot for the result is given below.
+```{r, echo=TRUE}
+library(ggplot2)
+ggplot(meanData,aes(interval,steps)) + geom_line() + facet_grid(day~.)
+```   
+
+  The plot shows that the pattern of number of steps for the weekdays is different from that of weekends.

@@ -1,0 +1,201 @@
+-----------------------------------
+Getting and Cleaning Data in R		
+Author: Amin Mousavi      Sep 2015
+-----------------------------------
+
+--------------------------
+MySQL database
+--------------------------
+library(RMySQL)
+cDb <- dbConnect(MySQL(), user="...", host="...")
+result <- dbGetQuery(cDb, "SQL query")
+allTables <- dbListTables(cDb)
+dbListFields(cDb, "TableName")
+myTable <- dbReadTable(cDb, "TableName")
+
+query <- dbSendQuery(cDb, "query")
+result <- fetch(query)
+dbClearResult(query)
+
+dbDisconnect(cDb)
+
+sqldf("select...")		Execute sql query in dataframes
+
+------------------------------
+HDF5
+------------------------------
+source("http://bioconductor.org/biocLite.R")
+biocLite("rhdf5")
+library(rhdf5)
+created = h5createFile("FileName.h5")
+created = h5createGroup("FileName.h5", "foo")
+created = h5createGroup("FileName.h5", "foo/foobar")
+
+h5ls("FileName.h5")
+h5write(A, "FileName.h5", "foo/A")
+
+df <- data.frame(...)
+h5write(df, "FileName.h5", "df")		writing dataset to h5
+
+h5read("FileName.h5", "df")
+
+h5write(c(12,13,14),"FileName.h5","foo/A",index=list(1:3,1))	writing and reading chunks
+h5read("FileName.h5","foo/A",index=list(1:3,1))
+
+----------------------------------
+Reading from Web
+----------------------------------
+con = url("...")
+htmlCode = readLines(con)
+close(con)
+
+library(httr)
+html2 = GET(url)
+content2 = content(html2, as="text")
+
+pg2 = GET("htt....",authenticate("user","passwd"))		Username, Password sites
+pg2  -> status: 401 failed, 200 success
+
+google = handle("google.com")
+pg1 = GET(handle=google,path="search")
+
+parsedHtml = htmlParse(content2,asText=TRUE)
+
+-----------------------------------
+Subsetting and Sorting
+-----------------------------------
+DF[(DF$var1 <= 3 | DF$Var3 >15),]
+
+Subsetting on NA values doesn't return NA values
+
+sort(X$Var1, decreasing=TRUE)
+sort(X$Var1, na.last=TRUE)		Put NA values at the last
+
+DF[order(DF$Var1, DF$Var3),]			Order DF by variables
+library(plyr)
+arrange(DF,Var1)
+arrange(DF,desc(Var1))
+
+DF$Var4 <- rnorm(10)		Add a new col to DF
+DF2 <- cbind(DF,rnorm(10))	or	rbind ... add row
+
+str(DF)		Basic information about dataframe
+summary(DF)
+
+table(DF$Var1, useNA="ifany")		represent the values of DF as table
+table(DF$Var1, DF$Var2)
+
+any(is.na(DF$Var1))		Check for missing values  (any  all)
+
+colSums(is.na(DF))
+all(colSums(is.na(DF))==0)
+
+table(DF$Var1 %in% c(v1,v2))	Check for specific values
+DF[DF$Var1 %in% c(v1,v2),]	subset with specific values
+
+xt <- xtabs(Freq ~ Var1+Var2, data=DF)		Exploring the relation between vars using table
+xt <- xtabs(breaks~. , data=DF)
+ftable(xtab)
+
+object.size(DF)				Size on Disk
+print(object.size(DF),units="Mb")
+
+seq(1,10,by=2)
+seq(1,10,length=3)
+x<-C91,7,88,6);  seq(along=x)
+
+DF$Var5 = DF$Var1 %in% c(v1, v2)	append a new variable to DF
+DF$zipWrong = ifelse(DF$zipCode<0, TRUE, FALSE)
+DF$zipGroups = cut(DF$zipCode, breaks=quantile(DF$zipCode))	create categorical variable
+library(Hmisc)
+DF$zipGroups = cut2(DF$zipCode,g=4)
+
+fv <- factor(vec,levels("y","n")
+relevel(fv,ref="y")
+
+library(plyr); library(Hmisc)
+DF2 = mutate(DF, Var5=cut2(Var1,g=4))
+
+abs(x), sqrt(x), ceiling(x), floor(x), round(x,digits=n), signif(x,digits=n)
+
+---------------------------------------
+Reshaping Data
+---------------------------------------
+DFMelt <- melt(DF,id=c("Var1","Var2"),measure.vars=c("Var4","Var5"))	melt the measure vars into on col
+var2Data <- dcast(DF,Var2 ~ variable)			Relation of Var2 and other vars
+var2Data <- dcast(DF,Var2 ~ variable,mean)
+spDF = split(DF$Var1,DF$Var2)
+spCount = lapply(spDF,sum)
+
+library(plyr)
+ddply(DF,.(Var1),summarize,sum=sum(count))
+select(DF, Var1:Var3)		Select cols from Var1 to Var3
+select(DF, -(Var1:Var3))	select cols except Var1 to Var3  **
+** without dplyr:  
+i <- match("Var1",names(DF))
+j <- match("Var2",names(DF))
+DF[,-(i:j)]
+
+rowSub <- filter(DF, Var1>v1 & Var2<v2)		Subsets the rows
+DF <- arrange(DF, Var2)
+DF <- arrange(DF, desc(Var2))
+
+DF <- rename(DF, V2 = Var2, V3 = Var3)
+DF <- mutate(DF,VV = Var2-mean(Var3))		Create new variable
+
+DF <- group_by(DF, FactorVar)		Group DF by a factor var
+summarize(DF, V1=mean(Var1), V2=max(Var2))
+
+Pipeline operator
+DF %>% mutate(month=as.POSIXlt(date)$mon+1) %>% group_by(month) %>% summarize(V1=..,...)
+
+mergedDF <- merge(DF1,DF2,by.x="colId",by.y="id",all="TRUE")	common cols => Var1.x Var1.y
+intersect(names(DF1),names(DF2))	common names
+
+arrange(join(DF1,DF2),id)	Merge by a common col id
+
+DFlist = list(DF1,DF2,DF3)	Merge by a common col id
+join_all(DFlist)
+
+
+-------------------------------------------
+Text Data
+-------------------------------------------
+
+tolower()
+toupper()
+strsplit()
+
+sub("_", "", Vec)		only the first char is replaced
+gsub("_", "", Vec)		all the chars are replaced
+
+grep("Term", DF$V1)		search for Term
+grepl("Term", DF$V1)
+
+library(stringgr)
+nchar("dfdefe")			num of characters
+substr("ABCdefg",1,3)   =>  "ABC"
+paste("AAA", "BBB")    =>  "AAA BBB"
+paste0("AAA", "BBB")   =>  "AAABBB"
+str_trim(" AAA     ")  =>  "AAA"
+
+Regular Expressions
+^I think		All the lines starts with
+morning$		All the lines end with
+[Bb]ush		=> Bush or bush
+[0-9]	=>  all the numbers
+[a-z]   =>  all the letters (lower case)
+[^?.]$	=> lines ending with NOT . or ?
+9.11		. means any char  => 9A11  9-11  ...
+flood|fire		or
+^[Gg]ood|[Bb]ad		good at beginning or bad anywhere
+^[Gg]ood|^[Bb]ad   or ^([Gg]ood|[Bb]ad)		good or bad at beginning
+[Gg]eorge( [Ww]\.)? [Bb]ush		()?  means optional
+(.*)		anything any number
+
+
+			
+
+
+
+

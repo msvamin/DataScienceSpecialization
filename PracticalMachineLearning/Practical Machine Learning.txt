@@ -1,0 +1,124 @@
+
+In sample error: resubstitution error
+Out of sample error: generalization error
+
+In sample error < Out of sample error
+why? overfitting
+
+Types of errors: True Positive (TP), False Positive (FP), True Negative (TN), False Negative (FN)
+Sensitivity: Prob(Positive|disease) =  TP/(TP+FN)
+Specifity: Prob(Negative|no diseae) = TN/(FP+TN)
+Positive predictive value: Prob(disease|Positive)
+Negative predictive value: Prob(no disease|Negative)
+Accuracy: Prob(correct outcome)
+
+ROC curves
+
+Cross-validation
+K-fold
+Leave one out
+
+library(caret)
+
+inTrain <- createDataPartition(y=DF$type, p=0.75, list=FALSE)
+training <- DF[inTrain,]
+testing <- DF[-inTrani,]
+
+modelFit <- train(type~., data=training, method="glm")
+modelFit$finalModel
+
+predictions <- predict(modelFit, newdata=testing)
+confusionMatrix(predictions, testing$type)
+
+featurePlot(x=training[,..],y=training$wage, plot="pairs")
+
+K-fold
+folds <- createFolds(y=DF$type, k=10, list=TRUE, returnTrain=TRUE)	returnTrain=FALSE => returns test sets
+
+Resampling
+folds <- createResample(y=DF$type, times=10, list=TRUE)
+
+Time Slices
+tme <- 1:1000
+folds <- createTimeSlices(y=tme,initialWindow=20,horizon=10)
+
+args(train.default)
+
+Metric options: RMSE, R2, Accuracy (fraction correct), Kappa (concordance)
+
+args(trainControl)
+
+trainControl resampling
+boot = bootstraping
+boot362 = bootstraping with adjustment
+cv = cross validation
+repeatedcv = repeated cross validation
+LOOCV = leave one out cross validation
+
+set.seed(1234)
+
+qplot(F1,F2,colour=F3,data=training)
+
+library(Hmisc)
+cutWage <- cut2(DF$F1,g=3)
+
+table
+prop.table
+
+preObj <- preProcess(training[,-F4],method=c("center","scale"))		method = c("BoxCox")	method="knnImpute" (missing data)
+
+modelFit <- train(F1~.,data=training,preProcess=c("center","scale"),method="glm")	
+
+dummy variables
+dummyVars
+
+library(splines)
+bs(..)
+nearZeroVar
+
+Decision Tree learning
+library(caret)
+modFit <- train(F1 ~ ., method = "rpart", data=training)
+predict(modFit,newdata=testing)
+plot(mod$Fit$finalModel, uniform=TRUE)
+Prettier plotting
+library(rattle)
+fancyRpartPlot(modFit$finalModel)
+
+Bagging (Bootstrap aggregation)
+1. Resample cases and recalculate predictions
+2. Average or majority vote
+Result: similar Bias, Reduced Variance, Useful for non-linear functions
+train function => method: bagEarth, treebag, bagFDA
+
+library(caret)
+treebag <- bag(predictors,temperature, B=10,bagControl=bagControl(fit=ctreeBag$fit,predict=ctreeBag$pred, aggregate=ctreeBag$aggregate))
+
+Random forests
+1. Bootstrap samples
+2. At each split, bootstrap variables
+3. Grow multiple trees and vote
+Pros: Accuracy, Cons: slow, Interpretability, Overfitting
+library(caret)
+modFit <- train(F1 ~ ., data = training, method = "rf", prox=TRUE)
+getTree(modFit$finalModel, k=2)		K=2 => second tree
+classCenter(...)
+
+Boosting
+1. Take lots of weak predictors
+2. Weight them and add them up
+3. Get a stronger predictor
+one example: Adaboost
+gradient boosting
+modFit <- train(F1~., method = "gbm", data=training, verbose=FALSE)
+method: gbm (boosting with trees), mboost (model based boosting), ada (additive logistic regression), gamBoost (generalized additive models)
+
+Model based prediction
+1. data follow a probabilistic model
+2. Use Bayes theorem to identified optimal classifiers
+Pros: computational convenient, reasonably accurate
+Cons: additional assumption about data, incorrect model reduces accuracy
+
+Linear discriminant analysis
+Quadratic discriminant analysis
+Naive Bayes 

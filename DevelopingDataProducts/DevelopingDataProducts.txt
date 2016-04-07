@@ -1,0 +1,10 @@
+library(shiny)
+ui.R
+server.R
+runApp()
+
+shinyUI(pageWithSidebar(sidebarPanel(h1('..'),h2('..')),mainPanel(h3('..'),code('..'),p('..'))))
+
+library(manipulate)
+
+library(rCharts)

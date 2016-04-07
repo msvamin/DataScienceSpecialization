@@ -1,0 +1,85 @@
+---
+title: 'Practical Machine Learning: Course Project'
+author: "Amin"
+date: "Friday, November 20, 2015"
+---
+
+#Summary
+The goal of this project is to use the data from accelerometers on the body of 6 participants and predict the manner in which they did the excersie. There are five different manners to perform the excercise, as described in the study: exactly according to the specification (Class A), throwing the elbows to the front (Class B), lifting the dumbbell only halfway (Class C), lowering the dumbbell only halfway (Class D) and throwing the hips to the front (Class E). Class A is the right way od performing the excercise and the other four ways are common mistakes. The data for this project come from this source: http://groupware.les.inf.puc-rio.br/har.   
+
+
+#Global Setting
+Here is the global setting for the code used throughout the report.
+```{r, echo=TRUE}
+echo = TRUE
+library(caret)
+```
+
+#Loading the data
+Firstly, we load the data from the mentioned link.
+```{r}
+trainDataURL <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
+trainFile <- "pml-training.csv"
+#download.file(url=trainDataURL, destfile=trainFile)
+testDataURL <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
+testFile <- "pml-testing.csv"
+#download.file(url=testDataURL, destfile=testFile)
+
+# Import the data treating empty values as NA.
+trainData <- read.csv(trainFile, na.strings=c("NA",""), header=TRUE)
+testData <- read.csv(testFile, na.strings=c("NA",""), header=TRUE)
+```
+
+#Cleaning the Data
+Now, I do some preprocessing to reduce the features. Firstly, I remove  the variables with nearly zero variance:
+```{r}
+nzv <- nearZeroVar(trainData)
+trainData <- trainData[,-nzv]
+```
+Secondly, I remove the variables that are almost NA (the variables that are NA more than 90% of the time):
+```{r}
+varsNA <- sapply(trainData, function(x) mean(is.na(x))) > 0.9
+trainData <- trainData[,varsNA==F]
+```
+These variables doesn't have anything to do with the prediction: X, user_name, raw_timestamp_part_1, raw_timestamp_part_2, cvtd_timestamp. So, I remove them from our model:
+```{r}
+trainData <- trainData[, -(1:5)]
+```
+
+#Model Prediction
+Firstly, I divide the data into two parts: training and testing.
+```{r}
+set.seed(113)
+inTrain <- createDataPartition(y=trainData$classe, p=0.7, list=F)
+training <- trainData[inTrain, ]
+testing <- trainData[-inTrain, ]
+```
+The model that I used for prediction is random forests.
+```{r, cache=TRUE}
+fitControl <- trainControl(method="cv", number=3, verboseIter=F)
+modFit <- train(classe ~ ., data=training, method="rf", trControl=fitControl)
+```
+Here is the parameters of the model.
+```{r}
+modFit$finalModel
+```
+Then, I calculate the in-sample prediction error:
+```{r}
+predictFit <- predict(modFit, newdata=training)
+confusionMatrix(training$classe, predictFit)
+```
+
+#Model Evaluation
+Now, I use the fiited model to predict in the testing data set. To determine the accuracy of the model, I use the confusion matrix.
+```{r}
+PredictFit2 <- predict(modFit, newdata=testing)
+confusionMatrix(testing$classe, PredictFit2)
+```
+The accuracy is 99.6% for the out-of-sample which is good and acceptable, and there is no need to try other algorithms to solve this problem.
+
+#Submitting the Test Set Predictions
+This is the time to test the algorithm on the real test data and submit the results for final assessment. This is the code to create the final results.
+```{r}
+testAnswers = predict(modFit,newdata=testData)
+print(testAnswers)
+```
